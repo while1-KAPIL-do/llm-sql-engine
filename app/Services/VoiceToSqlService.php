@@ -15,20 +15,29 @@ class VoiceToSqlService
 {
     public function handleVoiceToSql(Request $request)
     {
+        // Validate either uploaded file OR recorded audio
         $request->validate([
-            'audio' => 'required|file|mimes:mp3,wav,webm,ogg|max:20480',
+            'audio_file' => 'required_without:audio|file|mimes:mp3,wav,webm,ogg|max:20480',
+            'audio'      => 'required_without:audio_file|file|mimes:mp3,wav,webm,ogg|max:20480',
         ]);
 
         $path = null;
         $sql = null;
         $results = [];
-        $audioResponseUrl = null;
         $userQuestion = null;
+        $executionSuccess = false;
+        $errorMessage = null;
 
         try {
-            // 1. Store uploaded audio
-            $path = $request->file('audio')->store('voice-input/' . now()->format('Y-m-d'));
-
+            // Determine which file input to use (microphone recording or manual upload)
+            if ($request->hasFile('audio_file')) {
+                $path = $request->file('audio_file')->store('voice-input/' . now()->format('Y-m-d'));
+            } elseif ($request->hasFile('audio')) {
+                $path = $request->file('audio')->store('voice-input/' . now()->format('Y-m-d'));
+            } else {
+                throw new \Exception('No audio file provided.');
+            }
+            
             // 2. Transcribe voice to text
             $transcript = Transcription::fromStorage($path)->generate();
             $userQuestion = trim((string) $transcript);
