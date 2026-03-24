@@ -124,6 +124,16 @@ return [
             'driver' => 'xai',
             'key' => env('XAI_API_KEY'),
         ],
+
+        'elevenlabs' => [  // Use 'elevenlabs' as the array key (not 'eleven')
+            'driver' => 'elevenlabs',  // Driver must be 'elevenlabs' (not 'eleven')
+            'key' => env('ELEVENLABS_API_KEY'),
+        ],
+        
+        'default' => [
+            'tts' => 'elevenlabs', // Text-to-speech
+            'stt' => 'openai', // Speech-to-text
+        ],
     ],
 
 ];
